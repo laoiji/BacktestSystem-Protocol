@@ -1,0 +1,50 @@
+// strategy_plugin.proto
+// 策略插件的核心接口定义
+
+syntax = "proto3";
+
+package protocol.strategy;
+
+import "common_types.proto"; // 假设已经定义了公共类型，如Empty
+import "market_data.proto";  // 假设市场数据结构如 StandardBarData 在此定义
+import "config.proto";       // 假设参数配置结构在此定义
+
+// 策略插件服务接口
+service StrategyPluginService {
+
+    // 1. 初始化方法：回测开始时调用，用于初始化策略内部状态和加载配置。
+    rpc Initialize (StrategyConfiguration) returns (Empty);
+    
+    // 2. 核心计算方法：每当新的 K 线/Tick 数据到达时调用。
+    // 这是策略接收市场信息并生成交易信号的地方。
+    rpc OnBar (market_data.StandardBarData) returns (TradeSignal);
+
+    // 3. 获取配置方法：用于 UI 界面动态展示策略所需的参数。
+    rpc GetConfiguration (Empty) returns (StrategyConfiguration);
+    
+    // 4. 终止方法：回测结束时调用，用于清理资源或保存最终状态。
+    rpc Shutdown (Empty) returns (Empty);
+}
+
+// 策略插件向核心引擎返回的交易信号
+message TradeSignal {
+    // 交易方向：BUY(买入), SELL(卖出), HOLD(保持)
+    enum Direction {
+        HOLD = 0; 
+        BUY  = 1;
+        SELL = 2;
+    }
+    
+    // 订单类型：MARKET(市价), LIMIT(限价)
+    enum OrderType {
+        MARKET = 0;
+        LIMIT  = 1;
+    }
+
+    Direction direction = 1;         // 信号方向
+    string security_symbol = 2;      // 证券代码 (例如: 000001.SZ)
+    double volume = 3;               // 交易数量/手数
+    OrderType type = 4;              // 订单类型
+    optional double price = 5;       // 如果是 LIMIT 订单，则指定价格
+    optional string strategy_id = 6; // 策略实例ID
+}
