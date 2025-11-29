@@ -34,6 +34,12 @@ OnBar: 这是实现所有交易算法和数学模型判断的地方。策略插�
 #这个文件将定义一些可重用且基础的消息结构，供其他所有 .proto 文件引用
 #这个文件将定义一些可重用且基础的消息结构，供其他所有 .proto 文件引用。
 
+#
+数据源插件（Data Source Plugin）服务接口定义
+我们现在正式定义 data_source_plugin.proto 文件，用于定义核心引擎如何向数据源插件请求数据。
 
+1. 数据专家：数据查询请求结构 (DataQueryRequest)
+2. 编程专家：gRPC 服务定义
+我们将数据源插件抽象为一个名为 DataSourcePluginService 的 gRPC 服务。它负责数据的连接和获取。
 
 
