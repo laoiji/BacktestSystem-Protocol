@@ -7,6 +7,7 @@ package protocol.data_source;
 
 import "common_types.proto"; 
 import "market_data.proto";  
+import "config.proto"; // <--- 关键修正：手动添加此行
 
 // 数据查询请求结构
 message DataQueryRequest {
@@ -38,8 +39,8 @@ message SecurityInfo {
 // 数据源插件服务接口
 service DataSourcePluginService {
 
-    // 1. 连接/认证：用于 UI 界面连接测试，例如输入API Key。
-    rpc Connect (DataConfiguration) returns (common.Status);
+    // 1. 连接/认证：【最终修正点】：使用绝对路径引用
+    rpc Connect (.protocol.config.DataConfiguration) returns (common.Status);
     
     // 2. 获取 K 线数据：核心引擎最常调用的方法。
     // 返回一个数据流 (stream)，支持大数据量分块传输。
