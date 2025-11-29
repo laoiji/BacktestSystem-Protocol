@@ -1,0 +1,51 @@
+// market_data.proto
+// 标准市场数据结构定义
+
+syntax = "proto3";
+
+package protocol.market;
+
+// 1. 标准K线数据（用于日线、分钟线等回测）
+message StandardBarData {
+    string symbol = 1;              // 证券代码 (例如: 000001.SZ)
+    string datetime = 2;            // K线时间戳 (UTC或本地时间，格式：YYYY-MM-DD HH:MM:SS)
+    string frequency = 3;           // K线周期 (例如: "1d", "60min", "5min")
+
+    // OHLCV 核心数据
+    double open = 4;                // 开盘价
+    double high = 5;                // 最高价
+    double low = 6;                 // 最低价
+    double close = 7;               // 收盘价
+    double volume = 8;              // 成交量
+
+    // 数据专家关键字段
+    double turnover = 9;            // 成交额 (可选，但推荐)
+    double adj_factor = 10;         // 复权因子：用于核心引擎统一处理除权复权逻辑
+    int32 quality_flag = 11;        // 数据质量标记 (例如: 0-正常, 1-数据缺失, 2-停牌)
+
+    // 通达信兼容性预留字段
+    optional double avg_price = 12; // 均价（部分数据源提供）
+    optional int64 position = 13;   // 某些数据源可能携带的持仓信息
+}
+// 2. 标准高频数据（用于Tick级回测或订单簿模拟）
+message StandardTickData {
+    string symbol = 1;              // 证券代码
+    string datetime = 2;            // Tick时间戳 (精确到毫秒或微秒)
+
+    // 基础价格与数量
+    double last_price = 3;          // 最新成交价
+    double volume = 4;              // 最新成交量
+    double turnover = 5;            // 最新成交额
+
+    // 订单簿快照（深度数据，通达信专家常关注）
+    // 采用 repeated 结构支持多档买卖盘
+    repeated double bid_price = 6;  // 买入价格列表 (例如: bid1, bid2, bid3...)
+    repeated double bid_volume = 7; // 买入量列表
+    repeated double ask_price = 8;  // 卖出价格列表
+    repeated double ask_volume = 9; // 卖出量列表
+
+    // 状态与信息
+    double open_interest = 10;      // 持仓量 (主要针对期货/期权)
+    double limit_up = 11;           // 涨停价
+    double limit_down = 12;         // 跌停价
+}
