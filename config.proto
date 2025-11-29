@@ -1,0 +1,60 @@
+// config.proto
+// 策略参数配置结构定义
+
+syntax = "proto3";
+
+package protocol.config;
+
+// 1. 定义支持的参数类型
+enum ParameterType {
+    PARAM_TYPE_UNKNOWN = 0;
+    PARAM_TYPE_INT = 1;        // 整数，例如：均线周期
+    PARAM_TYPE_DOUBLE = 2;     // 浮点数，例如：止损百分比
+    PARAM_TYPE_STRING = 3;     // 字符串，例如：数据源名称
+    PARAM_TYPE_BOOL = 4;       // 布尔值，例如：是否启用复权
+    PARAM_TYPE_ENUM = 5;       // 枚举值，例如：开仓方向（多头/空头）
+}
+
+// 2. 单个参数的详细结构（支持 UI 动态生成表单）
+message Parameter {
+    string name = 1;              // 参数名称（策略内部使用的Key，例如: "fast_ma_period"）
+    string display_name = 2;      // UI显示名称（例如: "快速均线周期"）
+    ParameterType type = 3;       // 参数类型
+
+    // 实际的参数值（使用 oneof 来确保只有一个值被设置）
+    oneof value {
+        int64 int_value = 4;
+        double double_value = 5;
+        string string_value = 6;
+        bool bool_value = 7;
+        string enum_value = 8; // 枚举值使用字符串表示，方便扩展
+    }
+    
+    // 元数据/约束条件（用于 UI 验证和展示）
+    optional string description = 9;   // 参数的简短描述
+    optional double min_value = 10;    // 最小值（Int/Double 类型）
+    optional double max_value = 11;    // 最大值（Int/Double 类型）
+    repeated string enum_options = 12; // 如果是 Enum 类型，提供所有可选值
+    optional string group_name = 13;   // 参数分组（用于 UI 归类，例如: "交易逻辑", "风险控制"）
+}
+
+// 3. 策略配置的主结构
+message StrategyConfiguration {
+    string strategy_id = 1;                 // 策略的唯一ID
+    string strategy_name = 2;               // 策略的名称
+    string version = 3;                     // 策略版本号
+
+    // 策略参数：使用 map 存储，Key是参数名称，Value是Parameter结构
+    map<string, Parameter> parameters = 4;  
+
+    // 风险控制参数（数学家视角）：统一管理回测的风险设定
+    double max_drawdown_limit = 5;          // 最大回撤限制（例如：0.20 代表 20%）
+    double total_capital = 6;               // 初始回测资金量
+
+    // 交易环境参数（通达信/数据专家视角）：定义回测环境
+    string start_date = 7;                  // 回测开始日期 (YYYY-MM-DD)
+    string end_date = 8;                    // 回测结束日期 (YYYY-MM-DD)
+    string default_symbol = 9;              // 默认回测标的
+    double commission_rate = 10;            // 交易手续费率
+    double slippage_rate = 11;              // 默认滑点率
+}
